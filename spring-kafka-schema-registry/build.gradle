@@ -1,0 +1,64 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '4.1.2'
+    id 'io.spring.dependency-management' version '1.1.7'
+    // Equivalent to org.apache.avro:avro-maven-plugin in pom.xml
+    id 'com.github.davidmc24.gradle.plugin.avro' version '1.9.1'
+}
+
+group = 'kafka.schema.registry'
+version = '0.0.1-SNAPSHOT'
+description = 'spring-kafka-schema-registry'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "confluent"
+        url = uri("https://packages.confluent.io/maven/")
+    }
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-kafka'
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+
+    // Source: https://mvnrepository.com/artifact/io.confluent/kafka-avro-serializer
+    implementation("io.confluent:kafka-avro-serializer:7.5.16")
+    // Source: https://mvnrepository.com/artifact/io.confluent/kafka-schema-registry-client
+    implementation("io.confluent:kafka-schema-registry-client:7.5.16")
+    // Source: https://mvnrepository.com/artifact/org.apache.avro/avro
+    implementation("org.apache.avro:avro:1.11.3")
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-kafka-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    testCompileOnly 'org.projectlombok:lombok'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+// Replicates <sourceDirectory> and <outputDirectory> from avro-maven-plugin
+tasks.named('generateAvroJava') {
+    source("src/main/resources")
+    include("**/*.avsc")
+    outputDir = file("src/main/java")
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+
